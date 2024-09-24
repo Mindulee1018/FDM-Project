@@ -2,6 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
+
+# Load the pre-trained model
+with open('xgb_model.pkl', 'rb') as file:
+    xgb_model = pickle.load(file)
 
 # Title and introduction
 st.title('Airline Passenger Satisfaction Prediction App')
@@ -16,11 +21,17 @@ with st.sidebar:
         # Selectbox for Customer Type
         custype = st.selectbox('Customer Type:', ['First-time', 'Returning'])
 
+        # Add Gender selection
+        gender = st.selectbox('Gender:', ['Male', 'Female'])
+
         # Slider for Age
         age = st.slider('Age:', 0, 120, 30)
 
         # Selectbox for Type of Travel
         travel_type = st.selectbox('Type of Travel:', ['Business', 'Personal'])
+
+        # Add Class selection
+        class_type = st.selectbox('Class:', ['Business', 'Economy', 'Economy Plus'])
 
         # Slider for Flight Distance
         flight_distance = st.slider('Flight Distance (in km):', 0, 10000, 500)
@@ -54,6 +65,56 @@ with st.sidebar:
 
 # Main area: Display the DataFrame and plot
 if submit_button:
+    # Convert user input into features
+    features = np.array([[
+        1 if custype == 'Returning' else 0,  # Encode Customer Type (binary)
+        1 if gender == 'Male' else 0,  # Encode Gender
+        age,
+        1 if travel_type == 'Business' else 0,  # Encode Type of Travel (binary)
+        flight_distance,
+        inflight_wifi,
+        departure_arrival_time,
+        ease_online_booking,
+        gate_location,
+        food_drink,
+        online_boarding,
+        seat_comfort,
+        inflight_entertainment,
+        onboard_service,
+        leg_room_service,
+        baggage_handling,
+        checkin_service,
+        inflight_service,
+        cleanliness,
+        departure_delay,
+        arrival_delay,
+        1 if class_type == 'Business' else (2 if class_type == 'Economy Plus' else 0)  # Encode Class
+    ]])
+
+    # Use the loaded model to predict
+    prediction = xgb_model.predict(features.reshape(1, -1))
+
+    # Map prediction result to label
+    satisfaction = 'Satisfied' if prediction == 1 else 'Neutral or Dissatisfied'
+    
+    # Calculate average rating
+    ratings = [
+        inflight_wifi, departure_arrival_time, ease_online_booking, 
+        gate_location, food_drink, online_boarding, seat_comfort, 
+        inflight_entertainment, onboard_service, leg_room_service, 
+        baggage_handling, checkin_service, inflight_service, cleanliness
+    ]
+    average_rating = np.mean(ratings)
+
+    # Determine satisfaction based on average rating
+    threshold = 4.0  # Define a threshold for satisfaction
+    customer_satisfaction = 'Satisfied' if average_rating >= threshold else 'Neutral or Dissatisfied'
+    
+    # Display the result
+    st.subheader('Prediction')
+    st.write(f'The predicted passenger satisfaction is: {satisfaction}')
+    st.write(f'Based on service ratings, the customer is considered: {customer_satisfaction}')
+
     # Create a DataFrame for the graph
     data = pd.DataFrame({
         'Service': [
@@ -62,12 +123,7 @@ if submit_button:
             'Inflight entertainment', 'On-board service', 'Leg room service', 
             'Baggage handling', 'Checkin service', 'Inflight service', 'Cleanliness'
         ],
-        'Rating': [
-            inflight_wifi, departure_arrival_time, ease_online_booking, 
-            gate_location, food_drink, online_boarding, seat_comfort, 
-            inflight_entertainment, onboard_service, leg_room_service, 
-            baggage_handling, checkin_service, inflight_service, cleanliness
-        ]
+        'Rating': ratings
     })
 
     # Display the DataFrame in the main area
