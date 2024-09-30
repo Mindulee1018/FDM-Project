@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import time
 
 # Load the pre-trained model
-# with open('xgb_model.pkl', 'rb') as file:
-#     xgb_model = pickle.load(file)
+with open('xgb_model.pkl', 'rb') as file:
+    xgb_model = pickle.load(file)
 
 # Set the background image
 background_image = """
