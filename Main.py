@@ -2,6 +2,8 @@ import streamlit as st
 import numpy as np
 import time
 import pickle
+import matplotlib.pyplot as plt
+
 
 # Load the pre-trained model
 try:
