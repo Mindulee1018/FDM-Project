@@ -5,8 +5,8 @@ import pickle
 
 # Load the pre-trained model
 try:
-    with open('xgb_model.pkl', 'rb') as file:
-        xgb_model = pickle.load(file)
+    with open('lgbm_model.pkl', 'rb') as file:
+        lgbm_model = pickle.load(file)
 except Exception as e:
     st.error(f"Error loading model: {e}")
 
