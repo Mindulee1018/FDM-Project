@@ -130,9 +130,11 @@ if submit_button:
         ]
         average_rating = np.mean(ratings)
 
-        # Determine satisfaction based on average rating
-        threshold = 4.0
-        customer_satisfaction = 'Satisfied' if average_rating >= threshold else 'Neutral or Dissatisfied'
+        # Determine satisfaction based on average rating and delay conditions
+        if average_rating >= 4.0 and departure_delay <= 14 and arrival_delay <= 14.5:
+            customer_satisfaction = 'Satisfied'
+        else:
+            customer_satisfaction = 'Neutral or Dissatisfied'
 
         # Display the result in a styled box
         st.markdown(f"""
